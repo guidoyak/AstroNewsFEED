@@ -14,7 +14,7 @@ on:
       max_per_site:
         description: "Maximum notable articles per website"
         required: false
-        default: "3"
+        default: "5"
         type: string
       model:
         description: "Gemini model ID override (default: gemini-4-hydrogen)"
@@ -57,7 +57,7 @@ jobs:
             --data data/news.json \
             --output index.html \
             --lookback-days "${{ inputs.lookback_days || '7' }}" \
-            --max-per-site "${{ inputs.max_per_site || '3' }}" \
+            --max-per-site "${{ inputs.max_per_site || '5' }}" \
             --model "$GEMINI_MODEL"
 
       - name: Commit and push updated feed

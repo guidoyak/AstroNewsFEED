@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
-"""Daily Astronomy & Space Exploration News Agent powered by Google Gemini.
+"""Weekly Astronomy & Space Exploration News Agent powered by Google Gemini.
 
 Reads websites from sites.md, scans each site for notable recent astronomy and
-space exploration news using the google-genai SDK with Google Search grounding,
-appends new deduplicated entries to data/news.json, and renders index.html.
+space exploration news using the google-genai SDK with Google Search grounding
+(with automatic fallback to direct RSS/HTML fetching + Gemini synthesis on the
+Gemini Free Tier where Google Search grounding requires billing), appends new
+deduplicated entries to data/news.json, and renders index.html.
 """
 
 from __future__ import annotations
@@ -30,10 +32,17 @@ if str(SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPT_DIR))
 
 from render_html import domain_label, sanitize_url, write_landing_page  # noqa: E402
+from web_fetcher import fetch_site_articles  # noqa: E402
 
 DEFAULT_MODEL = "gemini-4-hydrogen"
+FALLBACK_FREE_TIER_MODELS = (
+    "gemini-4-hydrogen",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite",
+)
 DEFAULT_LOOKBACK_DAYS = 7
-DEFAULT_MAX_PER_SITE = 3
+DEFAULT_MAX_PER_SITE = 5
 TRACKING_QUERY_PARAMS = {
     "utm_source",
     "utm_medium",
@@ -101,6 +110,10 @@ class SiteNewsResponse(BaseModel):
         default_factory=list,
         description="List of notable recent astronomy and space exploration news articles found on the website. Empty if none qualify.",
     )
+
+
+class GroundingQuotaError(RuntimeError):
+    """Raised when Google Search grounding is unavailable due to Free Tier quota/billing."""
 
 
 # ---------------------------------------------------------------------------
@@ -239,7 +252,6 @@ def extract_json_payload(raw_text: str) -> dict[str, Any]:
     if not text:
         return {"articles": []}
 
-    # Strip ```json ... ``` fences if present
     fence_match = re.search(r"```(?:json)?\s*(\{.*\}|\[.*\])\s*```", text, re.DOTALL)
     if fence_match:
         text = fence_match.group(1).strip()
@@ -247,7 +259,6 @@ def extract_json_payload(raw_text: str) -> dict[str, Any]:
     try:
         parsed = json.loads(text)
     except json.JSONDecodeError:
-        # Attempt to locate the outermost JSON object or array
         obj_start = text.find("{")
         obj_end = text.rfind("}")
         if obj_start != -1 and obj_end > obj_start:
@@ -263,7 +274,7 @@ def extract_json_payload(raw_text: str) -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
-# Gemini Prompting & Google Search Grounding
+# Gemini Prompting, Google Search Grounding & Free-Tier RSS/HTML Fallback
 # ---------------------------------------------------------------------------
 
 
@@ -310,13 +321,84 @@ For each selected article, provide:
 Return ONLY valid JSON matching the schema with top-level key "articles"."""
 
 
-def _is_retryable_error(exc: Exception) -> bool:
-    """Return True for transient HTTP 429 / 5xx API errors."""
+def build_direct_synthesis_prompt(
+    site_url: str,
+    fetched_articles: list[dict[str, str]],
+    today_utc: datetime,
+    max_articles: int,
+    recent_titles: list[str],
+) -> str:
+    """Build a prompt for Gemini to curate and summarize live-fetched RSS/HTML articles."""
+    domain = domain_label(site_url)
+    end_date = today_utc.strftime("%Y-%m-%d")
+
+    existing_block = ""
+    if recent_titles:
+        titles_list = "\n".join(f"- {t}" for t in recent_titles[:25])
+        existing_block = (
+            "\nAlready archived stories (DO NOT select or repeat these):\n"
+            f"{titles_list}\n"
+        )
+
+    articles_text_blocks: list[str] = []
+    for idx, art in enumerate(fetched_articles, start=1):
+        articles_text_blocks.append(
+            f"--- CANDIDATE {idx} ---\n"
+            f"TITLE: {art.get('title', '').strip()}\n"
+            f"URL: {art.get('url', '').strip()}\n"
+            f"DATE: {art.get('date', '') or end_date}\n"
+            f"CONTENT:\n{art.get('content', art.get('excerpt', '')).strip()}\n"
+        )
+    joined_articles = "\n".join(articles_text_blocks)
+
+    return f"""Today's date is {end_date} (UTC).
+
+Below are live articles fetched directly from {site_url} (domain: {domain}).
+Review ALL candidates carefully and select up to {max_articles} of the most compelling, scientifically or technologically significant news stories about astronomy, astrophysics, exoplanets, telescopes, planetary science, cosmology, or space exploration/missions.
+
+Rules:
+1. ONLY use facts, URLs, and dates present in the candidate articles below. Never invent facts, numbers, or URLs.
+2. Copy each selected article's exact URL into article_url and its exact publication date into date (YYYY-MM-DD).
+3. EXCLUDE shopping deals, buying guides, product promos, entertainment/sci-fi movie reviews, horoscopes, or trivial pieces.
+4. Select up to {max_articles} distinct, high-signal astronomy & space exploration stories (if fewer qualify, return only the ones that qualify).
+{existing_block}
+For each selected article, provide:
+- website_source: Clean publication name (e.g. "Astronomy.com" or "Space.com").
+- article_url: Exact URL copied from the candidate.
+- date: Publication date in YYYY-MM-DD format.
+- title: Clear, accurate headline of the story.
+- category: One short tag ("Astrophysics", "Exoplanets", "Spaceflight", "Solar System", "Cosmology", "Observatories", or "Planetary Science").
+- resume: A crisp, engaging summary of approximately 100 words (90 to 115 words) explaining what happened, who led the research/mission, and why it matters.
+- main_facts: 3 to 5 concise, verifiable factual bullet points with concrete numbers, instruments, spacecraft, or observations from the article.
+- implications_and_development: 2 to 4 sentences explaining the broader scientific or exploration implications and expected next steps or future developments of the research/mission.
+
+CANDIDATE ARTICLES FROM {domain}:
+{joined_articles}"""
+
+
+def _is_quota_or_billing_error(exc: Exception) -> bool:
+    """Return True when Gemini rejects a call with 429 quota/billing exhaustion."""
     status_code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
-    if status_code in {429, 500, 502, 503, 504}:
+    msg = str(exc).lower()
+    if status_code == 429 or "429" in msg or "resource_exhausted" in msg:
+        return True
+    return False
+
+
+def _is_model_unavailable_error(exc: Exception) -> bool:
+    """Return True when a model is not accessible (404/403) on this project."""
+    status_code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    msg = str(exc).lower()
+    return status_code in {403, 404} or "not found" in msg or "no longer available" in msg
+
+
+def _is_transient_server_error(exc: Exception) -> bool:
+    """Return True for transient 5xx/timeout errors worth retrying."""
+    status_code = getattr(exc, "code", None) or getattr(exc, "status_code", None)
+    if status_code in {500, 502, 503, 504}:
         return True
     msg = str(exc).lower()
-    return any(token in msg for token in ("429", "rate limit", "resource exhausted", "503", "timeout"))
+    return any(token in msg for token in ("503", "502", "504", "timeout", "temporarily unavailable"))
 
 
 def _is_schema_grounding_conflict(exc: Exception) -> bool:
@@ -332,14 +414,14 @@ def _is_schema_grounding_conflict(exc: Exception) -> bool:
 
 
 def _call_with_retry(fn, max_attempts: int = 3, base_delay: float = 2.0):
-    """Execute a Gemini API call with exponential backoff on transient failures."""
+    """Execute a Gemini API call with exponential backoff on transient server failures."""
     last_exc: Exception | None = None
     for attempt in range(1, max_attempts + 1):
         try:
             return fn()
         except Exception as exc:  # noqa: BLE001
             last_exc = exc
-            if attempt >= max_attempts or not _is_retryable_error(exc):
+            if attempt >= max_attempts or not _is_transient_server_error(exc):
                 raise
             sleep_for = base_delay * (2 ** (attempt - 1))
             logger.warning(
@@ -374,6 +456,52 @@ def _extract_grounding_urls(response: Any) -> list[str]:
         if uri:
             urls.append(str(uri))
     return urls
+
+
+def _response_to_entries(
+    raw_text: str,
+    site_url: str,
+    today_utc: datetime,
+    max_articles: int,
+) -> list[dict[str, Any]]:
+    """Validate JSON text through SiteNewsResponse and normalize into archive dicts."""
+    if not (raw_text or "").strip():
+        logger.warning("Empty response returned for %s", site_url)
+        return []
+
+    payload = extract_json_payload(raw_text)
+    validated = SiteNewsResponse.model_validate(payload)
+
+    today_str = today_utc.strftime("%Y-%m-%d")
+    now_iso = today_utc.isoformat().replace("+00:00", "Z")
+    results: list[dict[str, Any]] = []
+    for item in validated.articles[:max_articles]:
+        clean_title = item.title.strip()
+        clean_resume = item.resume.strip()
+        if not clean_title or not clean_resume:
+            continue
+
+        safe_article_url = sanitize_url(item.article_url, fallback=site_url)
+        clean_date = sanitize_date(item.date, fallback_date=today_str)
+        clean_facts = [fact.strip() for fact in item.main_facts if fact and fact.strip()]
+        clean_implications = item.implications_and_development.strip()
+
+        results.append(
+            {
+                "id": make_entry_id(clean_title, clean_date, site_url),
+                "website_source": item.website_source.strip() or domain_label(site_url),
+                "source_url": site_url,
+                "article_url": safe_article_url,
+                "date": clean_date,
+                "added_at": now_iso,
+                "title": clean_title,
+                "category": item.category.strip() or "Astronomy & Space",
+                "resume": clean_resume,
+                "main_facts": clean_facts,
+                "implications_and_development": clean_implications,
+            }
+        )
+    return results
 
 
 def scan_site_with_gemini(
@@ -434,56 +562,110 @@ def scan_site_with_gemini(
     try:
         response = _call_with_retry(_structured_call)
     except Exception as exc:  # noqa: BLE001
+        if _is_quota_or_billing_error(exc):
+            raise GroundingQuotaError(str(exc)) from exc
         if _is_schema_grounding_conflict(exc):
             logger.info(
                 "Model '%s' does not allow response_schema + google_search together; "
                 "falling back to grounded JSON prompting.",
                 model,
             )
-            response = _call_with_retry(_fallback_json_call)
+            try:
+                response = _call_with_retry(_fallback_json_call)
+            except Exception as inner_exc:  # noqa: BLE001
+                if _is_quota_or_billing_error(inner_exc):
+                    raise GroundingQuotaError(str(inner_exc)) from inner_exc
+                raise
         else:
             raise
 
     _extract_grounding_urls(response)
-
     raw_text = getattr(response, "text", None) or ""
-    if not raw_text.strip():
-        logger.warning("Empty response returned for %s", site_url)
-        return []
+    return _response_to_entries(raw_text, site_url, today_utc, max_articles)
 
-    payload = extract_json_payload(raw_text)
-    validated = SiteNewsResponse.model_validate(payload)
 
-    today_str = today_utc.strftime("%Y-%m-%d")
-    now_iso = today_utc.isoformat().replace("+00:00", "Z")
-    results: list[dict[str, Any]] = []
-    for item in validated.articles[:max_articles]:
-        clean_title = item.title.strip()
-        clean_resume = item.resume.strip()
-        if not clean_title or not clean_resume:
-            continue
+def _model_fallback_chain(preferred_model: str) -> list[str]:
+    """Return deduplicated list of models to try on Free-Tier synthesis."""
+    chain: list[str] = []
+    for candidate in (preferred_model, *FALLBACK_FREE_TIER_MODELS):
+        if candidate and candidate not in chain:
+            chain.append(candidate)
+    return chain
 
-        safe_article_url = sanitize_url(item.article_url, fallback=site_url)
-        clean_date = sanitize_date(item.date, fallback_date=today_str)
-        clean_facts = [fact.strip() for fact in item.main_facts if fact and fact.strip()]
-        clean_implications = item.implications_and_development.strip()
 
-        results.append(
-            {
-                "id": make_entry_id(clean_title, clean_date, site_url),
-                "website_source": item.website_source.strip() or domain_label(site_url),
-                "source_url": site_url,
-                "article_url": safe_article_url,
-                "date": clean_date,
-                "added_at": now_iso,
-                "title": clean_title,
-                "category": item.category.strip() or "Astronomy & Space",
-                "resume": clean_resume,
-                "main_facts": clean_facts,
-                "implications_and_development": clean_implications,
-            }
+def scan_site_via_direct_fetch(
+    client: Any,
+    model: str,
+    site_url: str,
+    today_utc: datetime,
+    lookback_days: int,
+    max_articles: int,
+    recent_titles: list[str],
+    fetched_articles: list[dict[str, str]] | None = None,
+) -> tuple[list[dict[str, Any]], str]:
+    """Fetch live RSS/HTML articles from site_url and synthesize summaries with Gemini."""
+    from google.genai import types
+
+    candidates = (
+        fetched_articles
+        if fetched_articles is not None
+        else fetch_site_articles(
+            site_url=site_url,
+            today_utc=today_utc,
+            lookback_days=lookback_days,
+            max_candidates=max(max_articles * 3, 12),
         )
-    return results
+    )
+    if not candidates:
+        logger.warning("  No recent articles fetched from %s", site_url)
+        return [], model
+
+    logger.info("  Synthesizing top %d stories from %d fetched article(s)...", max_articles, len(candidates))
+    prompt = build_direct_synthesis_prompt(
+        site_url=site_url,
+        fetched_articles=candidates,
+        today_utc=today_utc,
+        max_articles=max_articles,
+        recent_titles=recent_titles,
+    )
+    system_instruction = (
+        "You are an expert astronomy and space exploration science journalist and research analyst. "
+        "Synthesize accurate, insightful summaries grounded strictly in the provided article texts."
+    )
+
+    last_exc: Exception | None = None
+    for candidate_model in _model_fallback_chain(model):
+        try:
+            response = _call_with_retry(
+                lambda m=candidate_model: client.models.generate_content(
+                    model=m,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        response_mime_type="application/json",
+                        response_schema=SiteNewsResponse,
+                    ),
+                )
+            )
+            raw_text = getattr(response, "text", None) or ""
+            return (
+                _response_to_entries(raw_text, site_url, today_utc, max_articles),
+                candidate_model,
+            )
+        except Exception as exc:  # noqa: BLE001
+            last_exc = exc
+            if _is_quota_or_billing_error(exc) or _is_model_unavailable_error(exc):
+                logger.warning(
+                    "  Model '%s' unavailable/rate-limited (%s); trying next fallback model...",
+                    candidate_model,
+                    getattr(exc, "code", type(exc).__name__),
+                )
+                continue
+            raise
+
+    if last_exc:
+        raise last_exc
+    return [], model
 
 
 # ---------------------------------------------------------------------------
@@ -611,6 +793,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help=f"Maximum notable stories to keep per website per run (default: {DEFAULT_MAX_PER_SITE}).",
     )
     parser.add_argument(
+        "--mode",
+        choices=("auto", "grounding", "direct"),
+        default="auto",
+        help=(
+            "Scanning strategy: 'auto' tries Google Search grounding first and falls back "
+            "to direct RSS/HTML fetching + Gemini on Free-Tier quota 429 (default: auto)."
+        ),
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Scan websites and print discovered articles without modifying data/news.json or index.html.",
@@ -655,24 +846,58 @@ def main(argv: list[str] | None = None) -> int:
 
     discovered: list[dict[str, Any]] = []
     failed_sites: list[str] = []
+    grounding_enabled = args.mode in {"auto", "grounding"}
+    active_model = args.model
 
     for site_url in sites:
-        logger.info("Scanning %s using model '%s'...", site_url, args.model)
+        logger.info("Scanning %s using model '%s'...", site_url, active_model)
         recent_for_site = [
             str(e.get("title", ""))
             for e in existing_entries[:40]
             if e.get("title")
         ]
         try:
-            site_articles = scan_site_with_gemini(
-                client=client,
-                model=args.model,
-                site_url=site_url,
-                today_utc=today_utc,
-                lookback_days=args.lookback_days,
-                max_articles=args.max_per_site,
-                recent_titles=recent_for_site,
-            )
+            site_articles: list[dict[str, Any]]
+            if grounding_enabled:
+                try:
+                    site_articles = scan_site_with_gemini(
+                        client=client,
+                        model=active_model,
+                        site_url=site_url,
+                        today_utc=today_utc,
+                        lookback_days=args.lookback_days,
+                        max_articles=args.max_per_site,
+                        recent_titles=recent_for_site,
+                    )
+                except GroundingQuotaError as exc:
+                    if args.mode == "grounding":
+                        raise
+                    logger.warning(
+                        "Google Search grounding returned 429 quota/billing error (%s). "
+                        "Switching to Free-Tier compatible Direct RSS/HTML Fetch + Gemini synthesis.",
+                        exc,
+                    )
+                    grounding_enabled = False
+                    site_articles, active_model = scan_site_via_direct_fetch(
+                        client=client,
+                        model=active_model,
+                        site_url=site_url,
+                        today_utc=today_utc,
+                        lookback_days=args.lookback_days,
+                        max_articles=args.max_per_site,
+                        recent_titles=recent_for_site,
+                    )
+            else:
+                site_articles, active_model = scan_site_via_direct_fetch(
+                    client=client,
+                    model=active_model,
+                    site_url=site_url,
+                    today_utc=today_utc,
+                    lookback_days=args.lookback_days,
+                    max_articles=args.max_per_site,
+                    recent_titles=recent_for_site,
+                )
+
             logger.info("  Found %d candidate article(s) on %s", len(site_articles), site_url)
             discovered.extend(site_articles)
         except Exception as exc:  # noqa: BLE001
@@ -695,7 +920,7 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     archive["last_updated"] = today_utc.isoformat().replace("+00:00", "Z")
-    archive["model"] = args.model
+    archive["model"] = active_model
     archive["last_run_status"] = (
         "partial_success" if failed_sites else "success"
     )

@@ -261,3 +261,86 @@ def test_render_html_includes_all_required_fields_and_escapes_xss() -> None:
     assert "<script>alert(1)</script>" not in html_output
     assert "&lt;script&gt;alert(1)&lt;/script&gt;" in html_output
     assert "javascript:alert(1)" not in html_output
+
+
+def test_web_fetcher_parses_rss_and_discovers_feeds() -> None:
+    import web_fetcher
+
+    sample_html = (
+        '<html><head><link rel="alternate" type="application/rss+xml" '
+        'href="/feeds/all" /></head><body></body></html>'
+    )
+    feeds = web_fetcher.discover_feed_urls("https://www.space.com/", sample_html)
+    assert feeds[0] == "https://www.space.com/feeds/all"
+
+    rss_xml = """<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0"><channel>
+      <item>
+        <title>JWST Maps Atmosphere of Rocky Exoplanet</title>
+        <link>https://www.space.com/jwst-rocky-exoplanet</link>
+        <pubDate>Wed, 18 Nov 2026 14:30:00 +0000</pubDate>
+        <description>&lt;p&gt;New infrared spectroscopy reveals silicate clouds.&lt;/p&gt;</description>
+      </item>
+    </channel></rss>"""
+
+    items = web_fetcher.parse_feed_xml(rss_xml, base_url="https://www.space.com/feeds/all")
+    assert len(items) == 1
+    assert items[0]["date"] == "2026-11-18"
+    assert items[0]["url"] == "https://www.space.com/jwst-rocky-exoplanet"
+    assert "silicate clouds" in items[0]["excerpt"]
+
+
+def test_direct_fetch_synthesis_uses_model_fallback_on_429() -> None:
+    models_tried: list[str] = []
+
+    class Quota429Error(Exception):
+        code = 429
+
+    sample_json = json.dumps(
+        {
+            "articles": [
+                {
+                    "website_source": "Space.com",
+                    "article_url": "https://www.space.com/jwst-rocky-exoplanet",
+                    "date": "2026-11-18",
+                    "title": "JWST Maps Atmosphere of Rocky Exoplanet",
+                    "category": "Exoplanets",
+                    "resume": "Astronomers using the James Webb Space Telescope have mapped silicate cloud patterns across a nearby rocky exoplanet.",
+                    "main_facts": ["Observed with JWST MIRI instrument."],
+                    "implications_and_development": "Helps constrain atmospheric retention around M-dwarf stars.",
+                }
+            ]
+        }
+    )
+
+    class FakeModels:
+        def generate_content(self, **kwargs):
+            models_tried.append(kwargs["model"])
+            if kwargs["model"] == "gemini-4-hydrogen":
+                raise Quota429Error("429 RESOURCE_EXHAUSTED")
+            return SimpleNamespace(text=sample_json, candidates=[])
+
+    fake_client = SimpleNamespace(models=FakeModels())
+    results, used_model = astro_agent.scan_site_via_direct_fetch(
+        client=fake_client,
+        model="gemini-4-hydrogen",
+        site_url="https://www.space.com/",
+        today_utc=datetime(2026, 11, 19, 7, 0, tzinfo=timezone.utc),
+        lookback_days=7,
+        max_articles=5,
+        recent_titles=[],
+        fetched_articles=[
+            {
+                "title": "JWST Maps Atmosphere of Rocky Exoplanet",
+                "url": "https://www.space.com/jwst-rocky-exoplanet",
+                "date": "2026-11-18",
+                "content": "Astronomers using JWST MIRI mapped silicate cloud layers.",
+            }
+        ],
+    )
+
+    assert models_tried == ["gemini-4-hydrogen", "gemini-3.5-flash-lite"]
+    assert used_model == "gemini-3.5-flash-lite"
+    assert len(results) == 1
+    assert results[0]["title"] == "JWST Maps Atmosphere of Rocky Exoplanet"
+
