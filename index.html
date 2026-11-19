@@ -62,14 +62,14 @@
       <p class="results-summary is-hidden" id="results-summary" role="status" aria-live="polite"></p>
       <section class="empty-state" id="empty-state-initial">
         <p class="empty-state-eyebrow">Observatory Standby</p>
-        <h2>Awaiting the First Daily Astronomy Scan</h2>
+        <h2>Awaiting the First Weekly Astronomy Scan</h2>
         <p>
           The Gemini AI news agent is configured to scan every website listed in
-          <code>sites.md</code> once a day using Google Search grounding and publish
+          <code>sites.md</code> once a week using Google Search grounding and publish
           structured research summaries right here.
         </p>
         <p>
-          Trigger the <strong>Daily Astro News</strong> workflow in GitHub Actions
+          Trigger the <strong>Weekly Astro News</strong> workflow in GitHub Actions
           or run the script locally to populate your first dispatches.
         </p>
         <div class="empty-state-code">python scripts/astro_agent.py</div>
@@ -97,7 +97,7 @@
           <p class="footer-note">
             Want to follow another observatory, journal, or space agency? Add its URL to
             <a href="https://github.com/guidoyak/AstroNewsFEED/blob/main/sites.md" target="_blank" rel="noopener noreferrer"><code>sites.md</code></a>
-            and the next daily run will scan it automatically.
+            and the next weekly run will scan it automatically.
           </p>
         </div>
       </div>

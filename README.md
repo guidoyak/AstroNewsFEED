@@ -19,7 +19,7 @@ Every notable astronomy or space exploration article added to `index.html` conta
 
 ## How It Works
 
-1. Every day at **07:00 UTC** (or on-demand via **Actions → Daily Astro News → Run workflow**), GitHub Actions executes [`scripts/astro_agent.py`](scripts/astro_agent.py).
+1. Every week on **Monday at 07:00 UTC** (or on-demand via **Actions → Weekly Astro News → Run workflow**), GitHub Actions executes [`scripts/astro_agent.py`](scripts/astro_agent.py) with a 7-day lookback window.
 2. The script reads all website URLs listed in [`sites.md`](sites.md).
 3. For each website, it calls Gemini (`gemini-4-hydrogen` by default) via the `google-genai` SDK with `GoogleSearch` grounding enabled to discover genuinely notable recent astronomy and space exploration news.
 4. New stories are deduplicated against [`data/news.json`](data/news.json) (by normalized URL and headline similarity) and appended to the archive.
@@ -35,7 +35,7 @@ Edit [`sites.md`](sites.md) and add any URL (as a bullet item, Markdown link, or
 - https://science.nasa.gov/universe/
 ```
 
-The next daily run will pick up the new sources automatically.
+The next weekly run will pick up the new sources automatically.
 
 ## Setup Checklist (GitHub Repository)
 

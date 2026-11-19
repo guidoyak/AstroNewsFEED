@@ -32,7 +32,7 @@ if str(SCRIPT_DIR) not in sys.path:
 from render_html import domain_label, sanitize_url, write_landing_page  # noqa: E402
 
 DEFAULT_MODEL = "gemini-4-hydrogen"
-DEFAULT_LOOKBACK_DAYS = 2
+DEFAULT_LOOKBACK_DAYS = 7
 DEFAULT_MAX_PER_SITE = 3
 TRACKING_QUERY_PARAMS = {
     "utm_source",
