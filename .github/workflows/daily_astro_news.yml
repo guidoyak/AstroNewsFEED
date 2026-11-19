@@ -1,0 +1,76 @@
+name: Daily Astro News
+
+on:
+  schedule:
+    # Runs every day at 07:00 UTC
+    - cron: "0 7 * * *"
+  workflow_dispatch:
+    inputs:
+      lookback_days:
+        description: "Number of days to look back for news"
+        required: false
+        default: "2"
+        type: string
+      max_per_site:
+        description: "Maximum notable articles per website"
+        required: false
+        default: "3"
+        type: string
+      model:
+        description: "Gemini model ID override (default: gemini-4-hydrogen)"
+        required: false
+        default: "gemini-4-hydrogen"
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: daily-astro-news
+  cancel-in-progress: false
+
+jobs:
+  scan-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install --upgrade pip && pip install -r requirements.txt
+
+      - name: Scan astronomy websites & update landing page
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ inputs.model || 'gemini-4-hydrogen' }}
+        run: |
+          python scripts/astro_agent.py \
+            --sites sites.md \
+            --data data/news.json \
+            --output index.html \
+            --lookback-days "${{ inputs.lookback_days || '2' }}" \
+            --max-per-site "${{ inputs.max_per_site || '3' }}" \
+            --model "$GEMINI_MODEL"
+
+      - name: Commit and push updated feed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/news.json index.html
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          TODAY=$(date -u +"%Y-%m-%d")
+          git commit -m "chore(news): update daily astronomy feed (${TODAY})"
+          git push
