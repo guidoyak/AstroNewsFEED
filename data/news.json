@@ -1,6 +1,152 @@
 {
-  "last_updated": null,
-  "last_run_status": "initialized",
+  "last_updated": "2026-11-19T20:09:00.764875Z",
+  "last_run_status": "success",
   "model": "gemini-4-hydrogen",
-  "entries": []
+  "entries": [
+    {
+      "id": "astro-b97f3edbef",
+      "website_source": "Astronomy.com",
+      "source_url": "https://www.astronomy.com/news/",
+      "article_url": "https://www.astronomy.com/science/hear-stars-being-born-in-chandras-new-sonifications/",
+      "date": "2026-11-19",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "Hear stars being born in Chandra’s new sonifications",
+      "category": "Observatories",
+      "resume": "On November 17, NASA's Chandra X-ray Center released four new astronomical sonifications translating invisible light from active star-forming regions into sound. Launched under the A Universe of Sound program, the project pairs Chandra's X-ray observations of fierce young stars with infrared data from the James Webb Space Telescope and other NASA observatories. By mapping brightness, color, and position to pitch, volume, and instrument tone across regions including the Rho Ophiuchi cloud complex and the Orion Nebula, the videos let listeners hear individual newborn stars, gas clouds, and dark dust lanes. This approach helps astronomers uncover hidden patterns while making cosmic discoveries accessible to blind and low-vision audiences.",
+      "main_facts": [
+        "The Chandra X-ray Center initiated A Universe of Sound in 2020 as NASA's first ongoing program to sonify astronomical data, releasing four new star-forming region videos on November 17.",
+        "In the Rho Ophiuchi cloud complex, situated roughly 400 light-years away, Chandra X-ray data identifies individual newborn stars while JWST maps surrounding gas, dust, and stars.",
+        "Within the Orion Nebula, located about 1,310 light-years away, Chandra detects more than 1,000 young stars amidst a diffuse X-ray glow.",
+        "For a gas and dust ridge 7,670 light-years away featured in a famous 2022 JWST image, cellist Johnny Mok recorded live cello notes to represent Chandra's faint X-ray glow and hidden infant stars."
+      ],
+      "implications_and_development": "Studying young, massive stars and their fierce X-ray winds in stellar nurseries enables researchers to reconstruct how stars like the Sun originally formed. Furthermore, because human ears are acutely sensitive to subtle shifts in pitch, listening to multi-wavelength data can reveal patterns that traditional visual plots might obscure, while simultaneously opening astronomy to people who are blind or have low vision. Most of the newly released regions are provided in three separate audio-visual layers—Chandra alone, companion telescope data alone, and the full composite—allowing audiences and researchers to continue isolating and comparing how different wavelengths behave across cosmic environments."
+    },
+    {
+      "id": "astro-9d82e6460c",
+      "website_source": "Space.com",
+      "source_url": "https://www.space.com/",
+      "article_url": "https://www.space.com/space-exploration/asteroid-comet-missions/no-more-asteroid-landing-engine-trouble-forces-japans-hayabusa2-probe-to-change-plans",
+      "date": "2026-11-19",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "No more asteroid landing: Engine trouble forces Japan's Hayabusa2 probe to change plans",
+      "category": "Planetary Science",
+      "resume": "The Japan Aerospace Exploration Agency announced on Nov. 17 that ion thruster malfunctions have forced a major redesign of its veteran Hayabusa2 extended mission. Launched in 2014, Hayabusa2 returned samples from asteroid Ryugu in December 2020 and flew past asteroid Torifune in July before suffering a failure in its last working ion engine in mid-August. Rather than attempting a planned 2031 rendezvous and landing on the 36-foot-wide near-Earth asteroid 1998 KY26, JAXA will redirect the aging spacecraft to perform a high-speed flyby of D-type asteroid 2015 BM510 in April 2028, salvaging valuable science despite equipment deterioration.",
+      "main_facts": [
+        "The final functioning engine among Hayabusa2's four ion thrusters malfunctioned in mid-August, and sensors detected unexpected surface erosion on the spacecraft.",
+        "JAXA canceled the probe's 2031 rendezvous and landing at the 36-foot-wide (11-meter) near-Earth asteroid 1998 KY26.",
+        "Hayabusa2 will instead execute a high-speed flyby of asteroid 2015 BM510 in April 2028.",
+        "2015 BM510 is classified as an organic-rich, comet-like D-type asteroid that may have originated in the outer solar system and is a candidate target for ESA's mini-Fast mission series."
+      ],
+      "implications_and_development": "Although losing the 1998 KY26 landing ends hopes for close-up surface operations on a tiny fast-spinning asteroid, redirecting Hayabusa2 toward 2015 BM510 enables rare reconnaissance of a primitive D-type body. The April 2028 flyby will coincide with the scheduled launch of JAXA's next asteroid mission, Destiny+, alongside ESA's Ramses mission to Apophis. Destiny+ will observe Apophis prior to its 2029 Earth close approach before continuing to 3200 Phaethon, sustaining Japan's leadership in small-body exploration."
+    },
+    {
+      "id": "astro-1265acf665",
+      "website_source": "Space.com",
+      "source_url": "https://www.space.com/",
+      "article_url": "https://www.space.com/space-exploration/voyager/whats-next-for-nasa-interstellar-voyager-1-probe-after-passing-1-light-day-from-earth",
+      "date": "2026-11-19",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "What's next for NASA interstellar Voyager 1 probe after passing 1 light-day from Earth?",
+      "category": "Spaceflight",
+      "resume": "NASA's Voyager 1 spacecraft reached a historic distance milestone on Nov. 18, becoming the first human-made object to travel one light-day from Earth. At this distance, radio commands and telemetry require a full 24 hours to travel one way between mission controllers at NASA's Jet Propulsion Laboratory and the probe in interstellar space. Launched in 1977 alongside its twin Voyager 2, Voyager 1 crossed the heliopause in August 2012 and continues measuring plasma density, energetic particles, and shifting magnetic fields beyond the solar system. Despite dwindling nuclear power, engineers have redistributed spacecraft power to preserve science operations past its 50th anniversary.",
+      "main_facts": [
+        "Voyager 1 reached one light-day from Earth on Nov. 18, 2026, while its slower twin Voyager 2 is projected to reach that distance in 2035.",
+        "Voyager 1 entered interstellar space in August 2012, followed by Voyager 2 in November 2018.",
+        "Both probes launched in 1977 with 470 watts of nuclear power and lose approximately 4 watts per year.",
+        "Earlier in 2026, JPL engineers executed a power redistribution maneuver on both spacecraft to maintain scientific instruments without major operational changes before their 50th anniversaries."
+      ],
+      "implications_and_development": "By operating well beyond the heliopause, Voyager 1 provides unique in-situ data on how far solar shocks and pressure fronts penetrate the local interstellar medium and where pristine interstellar space begins. Scientists are particularly focused on tracking unexpected shifts in magnetic field direction as the probe moves farther from the sun. No major operational changes are anticipated until after both spacecraft pass their 50th launch anniversaries in August and September 2027, when further power-saving shutdowns may become necessary."
+    },
+    {
+      "id": "astro-c6e24ad608",
+      "website_source": "Space.com",
+      "source_url": "https://www.space.com/",
+      "article_url": "https://www.space.com/space-exploration/human-spaceflight/china-rolls-out-rocket-for-launch-of-1st-international-astronaut-to-tiangong-space-station-video",
+      "date": "2026-11-19",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "China rolls out rocket for launch of 1st international astronaut to Tiangong space station",
+      "category": "Spaceflight",
+      "resume": "China rolled out a 191-foot-tall Long March 2F rocket carrying the Shenzhou-24 spacecraft to the launch pad at Jiuquan Satellite Launch Center on Nov. 17 ahead of a historic orbital mission. Managed by the China Manned Space Agency, Shenzhou-24 will mark China's 18th crewed flight and carry the first foreign national, one of two Pakistani astronaut candidates, to the Tiangong space station. While the visiting Pakistani payload specialist is expected to stay aboard Tiangong for roughly a week before returning on Shenzhou-23, one Shenzhou-23 crewmate will remain in orbit for an additional six months, completing China's first year-long human spaceflight.",
+      "main_facts": [
+        "The 191-foot-tall (58-meter) Long March 2F rocket was transported 0.93 miles (1.5 kilometers) to the Jiuquan launch pad over roughly two hours on Nov. 17, 2026.",
+        "Shenzhou-24 will be China's 18th crewed mission and the first to fly a non-Chinese astronaut, sending Pakistan's first astronaut to orbit as a payload specialist.",
+        "One Shenzhou-23 astronaut, who launched on May 24, 2026, will extend their orbital stay by six months to achieve China's first year-long spaceflight.",
+        "Tiangong's three-module station was completed in late 2022 and has remained continuously crewed via rotating six-month missions."
+      ],
+      "implications_and_development": "Flying a Pakistani astronaut marks a milestone in opening China's Tiangong station to international partners, setting a precedent for future foreign delegations and potential space tourism. Meanwhile, the year-long orbital stay will generate critical physiological data on long-duration human spaceflight. These biomedical findings will directly inform China's plans for future crewed lunar expeditions and its goal of doubling Tiangong's size in the coming years."
+    },
+    {
+      "id": "astro-16510f31d5",
+      "website_source": "Space.com",
+      "source_url": "https://www.space.com/",
+      "article_url": "https://www.space.com/astronomy/stars/astronomers-witness-a-star-eating-its-companion-in-1st-of-its-kind-observation",
+      "date": "2026-11-18",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "Astronomers witness a star eating its companion in 1st-of-its-kind observation",
+      "category": "Astrophysics",
+      "resume": "Astrophysicists led by Viraj Karambelkar at Columbia University report the first direct observation of a dying star engulfing its stellar companion, published Nov. 18 in Nature. The team studied WNTR23bzdiq, a red giant in the Andromeda galaxy roughly 2.5 million light-years away that is seven times more massive and 350 times wider than the sun. Archival data from NASA's NEOWISE telescope and Palomar Observatory's WINTER instrument showed the system, nicknamed Bao, brightening since 2018 before erupting in late 2025. Observations from NASA's James Webb Space Telescope 47 days post-eruption revealed evidence of a companion star ramming into the giant's core, confirming a decades-old theoretical prediction.",
+      "main_facts": [
+        "The binary system, designated WNTR23bzdiq and nicknamed Bao, lies about 2.5 million light-years away in the Andromeda galaxy.",
+        "The primary red giant is roughly seven times the sun's mass and 350 times its width, while the engulfed companion had about 70% of the sun's mass.",
+        "NASA's NEOWISE space telescope and Palomar Observatory's WINTER telescope detected the star brightening in 2023, with archival records showing luminosity rising since 2018.",
+        "NASA's James Webb Space Telescope observed the system 47 days after its late-2025 eruption, which expelled an estimated 0.1 to 0.2 solar masses of material."
+      ],
+      "implications_and_development": "This observation provides the first empirical confirmation of stellar binary engulfment, a phenomenon theorized for decades to shape binary evolution. However, researchers note an alternative possibility remains that both stars survived in a much tighter orbit. Continued monitoring once the eruption settles will be necessary to determine the system's final state, while upcoming wide-field facilities like the Nancy Grace Roman Space Telescope and the Vera Rubin Observatory are expected to uncover many more similar mergers."
+    },
+    {
+      "id": "astro-4484aeeea4",
+      "website_source": "Space.com",
+      "source_url": "https://www.space.com/",
+      "article_url": "https://www.space.com/space-exploration/launches-spacecraft/ula-traces-vulcan-centaur-rocket-failure-to-inadequate-fuel-supply-to-1st-stage-engines",
+      "date": "2026-11-18",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "ULA traces Vulcan Centaur rocket failure to 'inadequate fuel supply' to 1st-stage engines",
+      "category": "Spaceflight",
+      "resume": "United Launch Alliance reported on Nov. 18 that preliminary data from its failed Nov. 15 Vulcan Centaur launch points to an inadequate fuel supply reaching the first-stage booster engines. The anomaly during liftoff from Florida's Space Coast resulted in low booster thrust and the loss of 40 Amazon Leo internet satellites. Crucially for Blue Origin, ULA noted the problem stemmed from the vehicle's fuel delivery system rather than the performance of its two BE-4 engines. Meanwhile, Vulcan's six redesigned Northrop Grumman solid rocket boosters and its RL-10-powered Centaur V upper stage appeared to perform nominally during the rocket's fifth flight.",
+      "main_facts": [
+        "The Nov. 15, 2026 failure was Vulcan Centaur's first launch failure across five flights since its January 2024 debut, destroying 40 Amazon Leo satellites.",
+        "Preliminary findings indicate low booster thrust resulted from inadequate fuel delivery from the rocket to its twin Blue Origin BE-4 engines, not an engine fault.",
+        "Vulcan's six solid rocket boosters performed nominally following nozzle redesigns prompted by burn-through incidents on its second (October 2024) and fourth (February 2026) flights.",
+        "The U.S. Federal Aviation Administration is overseeing ULA's ongoing anomaly investigation."
+      ],
+      "implications_and_development": "Exonerating the BE-4 engines is a significant relief for Blue Origin, which relies on seven or nine of the same engines for its New Glenn heavy-lift rocket while working to return New Glenn to flight after a May 28 test explosion. However, Vulcan Centaur faces an uncertain grounding period following three flights with anomalies out of five total launches. The length of the stand-down and required hardware modifications will depend on the final root-cause determination of the FAA-overseen investigation."
+    },
+    {
+      "id": "astro-20c1376956",
+      "website_source": "Astronomy.com",
+      "source_url": "https://www.astronomy.com/news/",
+      "article_url": "https://www.astronomy.com/space-exploration/voyager-1-reaches-1-light-day-from-earth/",
+      "date": "2026-11-17",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "Voyager 1 reaches 1 light-day from Earth",
+      "category": "Spaceflight",
+      "resume": "At 5:16 a.m. EST on November 18, NASA's Voyager 1 probe reaches a historic milestone by becoming the first spacecraft to travel 1 light-day—roughly 16.1 billion miles—from Earth. Launched in September 1977 to explore Jupiter and Saturn before entering interstellar space in 2012, Voyager 1 now operates so far away that radio commands require 24 hours each way. Powered by decaying plutonium-238 radioisotope generators losing about 4 watts annually, NASA engineers recently executed a coordinated power-saving maneuver to keep two of Voyager 1's original ten instruments running. To celebrate the achievement, NASA invited the public to flash Voyager's Morse code call sign skyward.",
+      "main_facts": [
+        "Voyager 1 travels at nearly 38,000 mph (61,000 km/h) and needed over 49 years since its September 5, 1977 launch to cross 16.1 billion miles (25.9 billion km).",
+        "A radio command sent from Earth takes 24 hours to reach Voyager 1 and another 24 hours for a reply to return.",
+        "Both Voyager 1 (which entered interstellar space in August 2012) and Voyager 2 (2018) are the only probes ever to directly study the region beyond the Sun's magnetic field.",
+        "Following a risky coordinated power-off maneuver nicknamed the 'Big Bang,' Voyager 1 currently operates two of its original 10 instruments while Voyager 2 runs three.",
+        "Voyager 2 remains about 2 billion miles (3.2 billion km) closer to Earth, with a 20-hour signal travel time, and is not projected to reach the 1 light-day mark until November 2035."
+      ],
+      "implications_and_development": "Together, the twin Voyager spacecraft remain humanity's sole direct observers of interstellar space, continuously returning invaluable data from beyond the Sun's magnetic influence. Because their plutonium-238 thermoelectric generators lose roughly 4 watts of electrical output per year, engineers must continue carefully managing and shutting down onboard components to preserve operations. The recent coordinated power-saving maneuver is expected to extend the lifetimes of both spacecraft and their remaining active instruments for several more years as Voyager 2 slowly tracks toward its own 1 light-day milestone in 2035."
+    },
+    {
+      "id": "astro-e7f14c2184",
+      "website_source": "Astronomy.com",
+      "source_url": "https://www.astronomy.com/news/",
+      "article_url": "https://www.astronomy.com/science/can-robots-save-earth-orbit/",
+      "date": "2026-11-17",
+      "added_at": "2026-11-19T20:09:00.764875Z",
+      "title": "Can robots save Earth orbit?",
+      "category": "Spaceflight",
+      "resume": "With orbital congestion growing from satellite megaconstellations, upper-atmosphere reentry pollution, and potential collision cascades, experts are examining in-space servicing, assembly, and manufacturing (ISAM) to sustain Earth orbit. By refueling, repairing, and repositioning spacecraft, satellite servicing extends operational lifespans and reduces the need for replacement launches. According to Aerospace Corporation space policy director Brian Weeden, ISAM has evolved through distinct phases, from NASA's 1973 Skylab crewed repair and five space shuttle missions to the Hubble Space Telescope, to autonomous robotic demonstrations like DARPA's 2007 Orbital Express and NASA's ISS Robotic Refueling Missions. However, University of Luxembourg researcher Jonas Bahlmann emphasizes that pairing servicing technology with revised regulations is essential.",
+      "main_facts": [
+        "NASA performed the first on-orbit repair in May 1973 when Skylab's first crew installed a nylon and Mylar parasol to replace a lost micrometeoroid and sun shield.",
+        "Space shuttle astronauts serviced the Solar Maximum Mission in 1984 and upgraded the Hubble Space Telescope across five missions between 1993 and 2009, though each shuttle launch cost $1 billion.",
+        "In 2007, DARPA's Orbital Express mission demonstrated autonomous robotic servicing in low-Earth orbit as the ASTRO spacecraft transferred hydrazine fuel and installed a battery on NEXTSat.",
+        "Beginning in 2011, NASA's three-phase Robotic Refueling Missions on the International Space Station demonstrated refueling for satellites not originally built for servicing as well as advanced cryogenic fuel storage."
+      ],
+      "implications_and_development": "Expanding the satellite-servicing industry could mitigate growing orbital threats, including megaconstellation light pollution, aluminum oxide accumulation from burning satellites, and debris collision chain reactions that could render orbital regions unusable for generations. As the technology matures and the commercial industry expands, experts note that simply demonstrating robotic servicing capabilities will not be enough to curb orbital crowding. Future progress will require crafting new space regulations and easing or removing outdated barriers to incentivize servicing adoption, potentially creating a win-win that slows orbital congestion while supporting launch providers' bottom lines."
+    }
+  ]
 }
